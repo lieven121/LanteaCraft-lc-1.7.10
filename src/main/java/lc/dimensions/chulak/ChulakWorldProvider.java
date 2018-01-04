@@ -1,7 +1,7 @@
-package lc.dimensions.abydos;
+package lc.dimensions.chulak;
 
 import lc.LCRuntime;
-import lc.biomes.BiomeAbydosDesert;
+import lc.biomes.BiomeChulakForrest;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
@@ -14,21 +14,21 @@ import net.minecraft.world.chunk.IChunkProvider;
  * @author AfterLifeLochie
  *
  */
-public class AbydosWorldProvider extends WorldProvider {
+public class ChulakWorldProvider extends WorldProvider {
 
 	private float[] colorsSunriseSunset = new float[4];
-	private BiomeAbydosDesert abydosBiome;
+	private BiomeChulakForrest chulakForrest;
 
 	/** Default constructor. */
-	public AbydosWorldProvider() {
-		abydosBiome = (BiomeAbydosDesert) LCRuntime.runtime.biomes().abydosDesert;
-		worldChunkMgr = new AbydosChunkManager(abydosBiome, 0);
+	public ChulakWorldProvider() {
+		chulakForrest = (BiomeChulakForrest) LCRuntime.runtime.biomes().chulakForrest;
+		worldChunkMgr = new ChulakChunkManager(chulakForrest, 0);
 		hasNoSky = false;
 	}
-	//TODO add sandstorms
+
 	@Override
 	public IChunkProvider createChunkGenerator() {
-		return new AbydosChunkProvider(worldObj, abydosBiome);
+		return new ChulakChunkProvider(worldObj, chulakForrest);
 	}
 
 	@Override
@@ -43,7 +43,7 @@ public class AbydosWorldProvider extends WorldProvider {
 
 	@Override
 	public String getDimensionName() {
-		return "LanteaCraft:Abydos";
+		return "LanteaCraft:Chulak";
 	}
 
 	@Override
@@ -87,7 +87,7 @@ public class AbydosWorldProvider extends WorldProvider {
 
 	@Override
 	public String getWelcomeMessage() {
-		return "Entering Abydos";
+		return "Entering Chulak";
 	}
 
 	@Override

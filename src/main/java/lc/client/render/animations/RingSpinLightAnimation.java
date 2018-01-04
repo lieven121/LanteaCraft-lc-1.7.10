@@ -11,13 +11,13 @@ import lc.common.util.game.RunnableTileCallback;
 import lc.common.util.math.Vector3;
 import lc.tiles.TileStargateBase;
 
-public class RingSpinAnimation extends Animation {
+public class RingSpinLightAnimation extends Animation {
 
-	public RingSpinAnimation(Double duration, Double start, Double end, boolean resample) {
+	public RingSpinLightAnimation(Double duration, Double start, Double end, boolean resample) {
 		super(duration, resample, new RunnableTileCallback() {
 			@Override
 			public void run(LCTile tile) {
-				if ((StargateType.fromOrdinal(tile.getBlockMetadata()) == StargateType.STANDARD) | (StargateType.fromOrdinal(tile.getBlockMetadata()) == StargateType.NOX) ) {
+				if ((StargateType.fromOrdinal(tile.getBlockMetadata()) == StargateType.STANDARD)) {
 					tile.mixer().replayChannel("spin");
 					Vector3[] chevrons = ((TileStargateBase) tile).getChevronBlocks();
 					World world = tile.getWorldObj();
@@ -38,7 +38,7 @@ public class RingSpinAnimation extends Animation {
 				tile.mixer().stopChannel("spin_alt");
 			}
 		});
-		addProperty("ring-rotation", start, end, InterpolationMode.SIN);
+		addProperty("ring-rotation", start, end, InterpolationMode.SMOOTHSTEP);
 	}
 
 	@Override

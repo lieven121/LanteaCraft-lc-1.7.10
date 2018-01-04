@@ -447,9 +447,9 @@ public class TileTransportRing extends LCMultiblockTile implements ITransportRin
 			return;
 		TileTransportRing slave = thinkServerFindSlave();
 		if (slave != null) {
-			commandQueue.add(new TransportRingCommand(TransportRingCommandType.ENGAGE, 50.0d, slave));
-			commandQueue.add(new TransportRingCommand(TransportRingCommandType.TRANSPORT, 20.0d, slave));
-			commandQueue.add(new TransportRingCommand(TransportRingCommandType.DISENGAGE, 50.0d, slave));
+			commandQueue.add(new TransportRingCommand(TransportRingCommandType.ENGAGE, 60.0d, slave));
+			commandQueue.add(new TransportRingCommand(TransportRingCommandType.TRANSPORT, 30.0d, slave));
+			commandQueue.add(new TransportRingCommand(TransportRingCommandType.DISENGAGE, 40.0d, slave));
 		}
 	}
 

@@ -4,6 +4,8 @@ import java.util.HashMap;
 
 import lc.LCRuntime;
 import lc.LanteaCraft;
+import lc.common.impl.registry.DefinitionWrapperProvider;
+import lc.items.ItemInstantGate;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -37,6 +39,7 @@ public class LCCreativeTabManager {
 		 */
 		public CreativeTabImpl(int par1, String par2Str, Item par3Item) {
 			super(par1, par2Str);
+			//setBackgroundImageName("textures/items/creative_icon.png");
 			this.par3Item = par3Item;
 		}
 

@@ -9,6 +9,8 @@ import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.gen.feature.WorldGenDesertWells;
+import net.minecraft.world.gen.structure.MapGenVillage;
+
 
 /**
  * Abydos desert biome implementation
@@ -16,7 +18,7 @@ import net.minecraft.world.gen.feature.WorldGenDesertWells;
  * @author AfterLifeLochie
  *
  */
-public class BiomeAbydosDesert extends BiomeGenBase implements IBiomeDefinition {
+public class BiomeChulakForrest extends BiomeGenBase implements IBiomeDefinition {
 
 	/**
 	 * Default constructor
@@ -24,28 +26,28 @@ public class BiomeAbydosDesert extends BiomeGenBase implements IBiomeDefinition 
 	 * @param biomeId
 	 *            The biome ID to use
 	 */
-	public BiomeAbydosDesert(int biomeId) {
-		super(biomeId, false);
-		topBlock = Blocks.sand;
+	public BiomeChulakForrest(int biomeId) {
+		super(biomeId, true);
+		topBlock = Blocks.grass;
 		biomeName = getName();
-		fillerBlock = Blocks.sand;
-		theBiomeDecorator.generateLakes = false;
-		theBiomeDecorator.treesPerChunk = -999;
-		theBiomeDecorator.deadBushPerChunk = -999;
+		fillerBlock = Blocks.dirt;
+		theBiomeDecorator.generateLakes = true;
+		theBiomeDecorator.treesPerChunk = 5;
+		theBiomeDecorator.deadBushPerChunk = 5;
 		theBiomeDecorator.reedsPerChunk = -999;
 		theBiomeDecorator.cactiPerChunk = -999;
-		this.setDisableRain();
-		this.temperature=1.0F;
         this.spawnableMonsterList.clear();
         this.spawnableCreatureList.clear();
         this.spawnableWaterCreatureList.clear();
         this.spawnableCaveCreatureList.clear();
 		//TODO add jafa
+        //TODO add java villeages
+        //TODO add grass darker texture
 	}
 
 	@Override
 	public String getName() {
-		return "abydos desert";
+		return "chulak forrest";
 	}
 
 	@Override
@@ -59,8 +61,8 @@ public class BiomeAbydosDesert extends BiomeGenBase implements IBiomeDefinition 
 		if (par2Random.nextInt(1000) == 0) {
 			int k = par3 + par2Random.nextInt(16) + 8;
 			int l = par4 + par2Random.nextInt(16) + 8;
-			WorldGenDesertWells worldgendesertwells = new WorldGenDesertWells();
-			worldgendesertwells.generate(par1World, par2Random, k, par1World.getHeightValue(k, l) + 1, l);
+			MapGenVillage mapGenVillage = new MapGenVillage();
+			mapGenVillage.generateStructuresInChunk(par1World, par2Random, k, par1World.getHeightValue(k, l) + 1);
 			
 		}
 	}

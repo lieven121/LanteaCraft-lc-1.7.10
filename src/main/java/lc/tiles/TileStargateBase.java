@@ -26,8 +26,11 @@ import lc.client.animation.Animation;
 import lc.client.openal.StreamingSoundProperties;
 import lc.client.render.animations.ChevronMoveAnimation;
 import lc.client.render.animations.ChevronReleaseAnimation;
+import lc.client.render.animations.IncomingConnectionAnimation;
 import lc.client.render.animations.IrisMoveAnimation;
 import lc.client.render.animations.RingSpinAnimation;
+import lc.client.render.animations.RingSpinLightAnimation;
+import lc.client.render.animations.VortexAnimation;
 import lc.common.LCLog;
 import lc.common.base.LCBlock;
 import lc.common.base.LCTile;
@@ -85,14 +88,40 @@ import cpw.mods.fml.relauncher.Side;
 @DriverCandidate(types = { IntegrationType.POWER, IntegrationType.COMPUTERS })
 public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnable, IStargateAccess, ITileRenderInfo {
 
-	static {
+	 {
 		registerChannel(TileStargateBase.class, new ChannelDescriptor("spin", "stargate/milkyway/milkyway_roll.ogg",
 				new StreamingSoundProperties()));
-		registerChannel(TileStargateBase.class, new ChannelDescriptor("lock",
-				"stargate/milkyway/milkyway_chevron_lock.ogg", new StreamingSoundProperties()));
+		registerChannel(TileStargateBase.class, new ChannelDescriptor("lock", "stargate/milkyway/milkyway_chevron_lock.ogg", 
+				new StreamingSoundProperties()));
+		registerChannel(TileStargateBase.class, new ChannelDescriptor("open", "stargate/milkyway/milkyway_open.ogg", 
+				new StreamingSoundProperties()));
+		registerChannel(TileStargateBase.class, new ChannelDescriptor("close", "stargate/milkyway/milkyway_close.ogg", 
+				new StreamingSoundProperties()));
+		
+		
+			
+		registerChannel(TileStargateBase.class, new ChannelDescriptor("spin_alt", "stargate/pegasus/pegasus_roll.ogg",
+				new StreamingSoundProperties()));
+		registerChannel(TileStargateBase.class, new ChannelDescriptor("lock_alt", "stargate/pegasus/pegasus_chevron_lock.ogg", 
+				new StreamingSoundProperties()));
+		registerChannel(TileStargateBase.class, new ChannelDescriptor("open_alt", "stargate/pegasus/pegasus_open.ogg", 
+				new StreamingSoundProperties()));
+		registerChannel(TileStargateBase.class, new ChannelDescriptor("close_alt", "stargate/milkyway/milkyway_close.ogg", 
+				new StreamingSoundProperties()));
+		
+		registerChannel(TileStargateBase.class, new ChannelDescriptor("open_iris", "stargate/iris/metal_iris_open.ogg",
+				new StreamingSoundProperties()));
+		registerChannel(TileStargateBase.class, new ChannelDescriptor("close_iris", "stargate/iris/metal_iris_close.ogg", 
+				new StreamingSoundProperties()));
+		
+		registerChannel(TileStargateBase.class, new ChannelDescriptor("open_iris_energy", "stargate/iris/energy_iris_on.ogg",
+				new StreamingSoundProperties()));
+		registerChannel(TileStargateBase.class, new ChannelDescriptor("close_iris_energy", "stargate/iris/energy_iris_off.ogg", 
+				new StreamingSoundProperties()));
 	}
 
 	private static class SGStructureConfig extends StructureConfiguration {
+		
 		private BlockFilter[] filters;
 
 		public SGStructureConfig(BlockFilter[] filters) {
@@ -135,6 +164,16 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 			new BlockFilter(Blocks.air), new BlockFilter(LCRuntime.runtime.blocks().stargateRingBlock.getBlock(), 2),
 			new BlockFilter(LCRuntime.runtime.blocks().stargateRingBlock.getBlock(), 3),
 			new BlockFilter(LCRuntime.runtime.blocks().stargateBaseBlock.getBlock(), 1) });
+	
+	public final static StructureConfiguration noxStructure = new SGStructureConfig(new BlockFilter[] {
+			new BlockFilter(Blocks.air), new BlockFilter(LCRuntime.runtime.blocks().stargateRingBlock.getBlock(), 6),
+			new BlockFilter(LCRuntime.runtime.blocks().stargateRingBlock.getBlock(), 7),
+			new BlockFilter(LCRuntime.runtime.blocks().stargateBaseBlock.getBlock(), 3) });
+	
+	public final static StructureConfiguration wraithStructure = new SGStructureConfig(new BlockFilter[] {
+			new BlockFilter(Blocks.air), new BlockFilter(LCRuntime.runtime.blocks().stargateRingBlock.getBlock(), 4),
+			new BlockFilter(LCRuntime.runtime.blocks().stargateRingBlock.getBlock(), 5),
+			new BlockFilter(LCRuntime.runtime.blocks().stargateBaseBlock.getBlock(), 2) });
 
 	/**
 	 * Used to track an entity position and velocity
@@ -196,18 +235,20 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 	private static final double stargateChevronMoveTime = 5.0d;
 	private static final double stargateConnectTimeout = 200.0d;
 	private static final double stargateEstablishedTimeout = 2400.0d;
+	private static final double stargateVortexTime = 20.0d;
 	private static double stargateIrisSpeed = 40.0d;
+	
 	
 	private double getStargateSpeed() {
 		StateMap state = this.clientRenderState;
 	
 		if (state.get("iris", false)) {
-			if (state.get("iris-type", "mechanical").equals("mechanical")) 
-				stargateIrisSpeed = 40.0d;
-			 else if (state.get("iris-type", "energy").equals("energy")) 
+			if (state.get("iris-type", "").equals("mechanical")) 
+				stargateIrisSpeed = 60.0d;
+			 else if (state.get("iris-type", "").equals("energy")) 
 				stargateIrisSpeed = 2.0d;
 			 else 
-				stargateIrisSpeed = 40.0d;
+				stargateIrisSpeed = 32.0d;
 		}
 		return stargateIrisSpeed;
 	}
@@ -236,6 +277,7 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 	private StateMap clientRenderState = new StateMap();
 	private double[][][] clientGfxGrid = null;
 	private Random clientRandomProvider = new Random();
+	
 
 	private char clientCurrentGlyph;
 	private Stack<Character> clientEngagedGlyphs = new Stack<Character>();
@@ -247,6 +289,11 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 	private int clientEngagedChevrons;
 	/** Client dialling source - used only for rendering */
 	private boolean clientDiallingIsSource;
+	
+	public Stack<Character> getClientEngagedGlyphs() {
+		return clientEngagedGlyphs;
+	}
+	//private NBTTagCompound nbtIris = new NBTTagCompound();
 
 	private FilteredInventory inventory = new FilteredInventory(1) {
 		@Override
@@ -273,6 +320,7 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 		public String getInventoryName() {
 			return "Stargate";
 		}
+		
 	}.setFilterRule(0, new SlotFilter(new ItemStack[] { LCRuntime.runtime.items().lanteaStargateIris.getStackOf(1) },
 			null, true, false));
 
@@ -286,13 +334,19 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 	public StructureConfiguration getConfiguration() {
 		if (getStargateType() == StargateType.STANDARD)
 			return milkyStructure;
-		else
+		else if (getStargateType() == StargateType.ATLANTIS)
 			return atlStructure;
+		else if (getStargateType() == StargateType.NOX)
+			return noxStructure;
+		else 
+			return wraithStructure;
+		
 
 	}
 
 	@Override
 	public void thinkMultiblock() {
+		
 		if (getState() == MultiblockState.NONE) {
 			Orientations rotation = Orientations.from(getRotation());
 			if (getConfiguration().test(getWorldObj(), xCoord, yCoord, zCoord, rotation)) {
@@ -329,7 +383,9 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 
 	}
 
+	
 	private void thinkClientCommand(StargateCommand command) {
+		StateMap state = this.renderInfoTile().tileRenderState();
 		switch (command.type) {
 		case CONNECT:
 			for (int i = 0; i < 9; i++) {
@@ -337,47 +393,80 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 				tileRenderState().set("chevron-light-" + i, 0.5d);
 			}
 			break;
+
+			
 		case DISCONNECT:
-			clientAnimationQueue.push(new ChevronReleaseAnimation(9, true));
-			clientAnimationQueue.push(new RingSpinAnimation(stargateSpinTime, 0.0d, 0.0d, true));
+			clientAnimationQueue.add(new ChevronReleaseAnimation(9, true));
+			if (this.getStargateType().equals(getStargateType().STANDARD) || this.getStargateType().equals(getStargateType().NOX))
+				clientAnimationQueue.add(new RingSpinAnimation(stargateSpinTime, 0.0d, 0.0d, true));
+			else
+				clientAnimationQueue.add(new RingSpinLightAnimation(stargateSpinTime, 0.0d, 0.0d, true));
 			clientEngagedGlyphs.clear();
+			if ((StargateType.fromOrdinal(getBlockMetadata()) == StargateType.STANDARD || this.getStargateType().equals(getStargateType().NOX))) mixer().replayChannel("close");
+			else mixer().replayChannel("close_alt");
 			break;
 		case DISENGAGE:
 			if (clientEngagedGlyphs.size() > 0) {
-				clientAnimationQueue.push(new ChevronMoveAnimation(stargateChevronMoveTime,
+				clientAnimationQueue.add(new ChevronMoveAnimation(stargateChevronMoveTime,
 						clientChevronQueue[clientEngagedGlyphs.size() - 1], 0.0d, 0.0d, true));
 				clientEngagedGlyphs.remove(clientEngagedGlyphs.size() - 1);
 			}
 			break;
 		case ENGAGE:
 			clientEngagedGlyphs.add(clientCurrentGlyph);
-			clientAnimationQueue.push(new ChevronMoveAnimation(stargateChevronMoveTime,
+			clientAnimationQueue.add(new ChevronMoveAnimation(stargateChevronMoveTime,
 					clientChevronQueue[clientEngagedGlyphs.size() - 1], 1.0d / 8.0d, 0.5d, true));
+				
 			break;
 		case SPIN:
+			
+		/*	if (state.get("iris-type", "mechanical").equals("mechanical")) {
+			
+			} else if (state.get("iris-type", "energy").equals("energy")) {
+			
+			}*/
+			
+				
 			clientCurrentGlyph = (Character) command.args[0];
 			int symbolIndex = StargateCharsetHelper.singleton().index((char) clientCurrentGlyph);
 			double symbolRotation = symbolIndex * (360.0 / 38.0d);
 			double aangle = MathUtils.normaliseAngle(symbolRotation);
-			clientAnimationQueue.push(new RingSpinAnimation(stargateSpinTime, 0.0d, aangle, true));
+			if (this.getStargateType().equals(getStargateType().STANDARD) || this.getStargateType().equals(getStargateType().NOX))
+				clientAnimationQueue.add(new RingSpinAnimation(stargateSpinTime, 0.0d, aangle, true));
+			else
+				clientAnimationQueue.add(new RingSpinLightAnimation(stargateSpinTime, 0.0d, aangle, true));
 			for (int i = 0; i < clientEngagedGlyphs.size() - 1; i++) {
 				tileRenderState().set("chevron-dist-" + clientChevronQueue[i], 1.0d / 8.0d);
 				tileRenderState().set("chevron-light-" + clientChevronQueue[i], 0.5d);
 			}
 			break;
 		case CLOSEIRIS:
-			clientAnimationQueue.push(new IrisMoveAnimation(getStargateSpeed(), 1.0f));
+			clientAnimationQueue.addFirst(new IrisMoveAnimation(getStargateSpeed(), 1.0f));
+			if (state.get("iris-type", "energy").equals("energy"))
+				mixer().replayChannel("close_iris_energy");
+			else
+				mixer().replayChannel("close_iris");
 			break;
 		case OPENIRIS:
-			clientAnimationQueue.push(new IrisMoveAnimation(getStargateSpeed(), 0.0f));
+			clientAnimationQueue.addFirst(new IrisMoveAnimation(getStargateSpeed(), 0.0f));
+			if (state.get("iris-type", "energy").equals("energy"))
+				mixer().replayChannel("open_iris_energy");
+			else
+				mixer().replayChannel("open_iris");
 			break;
 		default:
 			break;
 		}
 	}
-
+	
+	
+	
+	
 	/** Called to update the rendering properties */
+
+	
 	private void thinkClientRender(boolean updated) {
+
 		if (clientAnimation != null) {
 			clientAnimationCounter += 1.0d;
 			if (clientAnimation.finished(clientAnimationCounter)) {
@@ -392,37 +481,111 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 		}
 
 		if (updated) {
+			if (!clientDiallingIsSource) {
+					//LCLog.debug(this.getStargateAddressString() == null?"null":this.getStargateAddressString());
+					
+			}
+			
 			switch (clientStargateState) {
 			case CONNECTED:
-				tileRenderState().set("event-horizon", true);
+				if (!clientDiallingIsSource) {
+					/*for (int i = 0; i < 9; i++) {
+						tileRenderState().set("chevron-dist-" + i, 0.0d);
+						tileRenderState().set("chevron-light-" + i, 0.0d);
+					}*/
+					//tileRenderState().set("incomming", true);
+					clientEngagedGlyphs.clear(); //TODO add to server
+					if ((StargateType.fromOrdinal(getBlockMetadata()) == StargateType.STANDARD)) mixer().replayChannel("open");
+					else mixer().replayChannel("open_alt");
+					tileRenderState().set("event-horizon", true);
+					//clientAnimationQueue.addFirst(new IncomingConnectionAnimation(this.stargateSpinTime*2, 0.0, 360.0, true));
+					//tmp
+					for (int i = 0; i < 9; i++) {
+						tileRenderState().set("chevron-dist-" + i, 1.0d / 8.0d);
+						tileRenderState().set("chevron-light-" + i, 0.5d);
+					}
+				}else {
+					if ((StargateType.fromOrdinal(getBlockMetadata()) == StargateType.STANDARD)) mixer().replayChannel("open");
+					else mixer().replayChannel("open_alt");
+					tileRenderState().set("event-horizon", true);
+					
+					clientAnimationQueue.addFirst(new VortexAnimation(stargateVortexTime, 0.0, 2.1));
+					for (int i = 0; i < 9; i++) {
+						tileRenderState().set("chevron-dist-" + i, 1.0d / 8.0d);
+						tileRenderState().set("chevron-light-" + i, 0.5d);
+					}
+				}
+
+				
+				//tileRenderState().set("event-vortex", true);
 				break;
 			case DIALLING:
+				LCLog.debug("dialing");
 				if (!clientDiallingIsSource) {
 					if (clientEngagedChevrons == 8) {
 						for (int i = 0; i < 9; i++)
-							clientAnimationQueue.push(new ChevronMoveAnimation(5.0d, i, 1.0d / 8.0d, 0.5d, true));
+							clientAnimationQueue.add(new ChevronMoveAnimation(5.0d, i, 1.0d / 8.0d, 0.5d, true));
+						//LCLog.debug(this.getStargateAddressString() == null?"null":this.getStargateAddressString());
 					}
 				}
 				break;
 			case DISCONNECTING:
 				tileRenderState().set("event-horizon", false);
+				if (!clientDiallingIsSource) {
+					for (int i = 0; i < 9; i++) {
+						tileRenderState().set("chevron-dist-" + i, 0.0d);
+						tileRenderState().set("chevron-light-" + i, 0.0d);
+					}
+					tileRenderState().set("incomming", false);
+					clientEngagedGlyphs.clear();
+					if ((StargateType.fromOrdinal(getBlockMetadata()) == StargateType.STANDARD || this.getStargateType().equals(getStargateType().NOX))) mixer().replayChannel("close");
+					else mixer().replayChannel("close_alt");
+					break;
+				}else {
+					//thinkClientCommand(new StargateCommand(StargateCommandType.DISCONNECT, 0,0));
+					
+					
+				}
+					
+				
 				break;
 			case FAILED:
 				break;
 			case IDLE:
+				LCLog.debug("idle");
 				tileRenderState().set("event-horizon", false);
+				//tileRenderState().set("event-horizon", false);
 				break;
 			default:
 				break;
 			}
 		}
+		//if (this.getInventory().getStackInSlot(0) != null)
+		//LCLog.debug(getIrisType() == null ? "null": getIrisType());
 
+		/*if (nbtIris.getString("x"+this.xCoord+"y"+this.yCoord+"z"+this.zCoord) != null && ! nbtIris.getString("x"+this.xCoord+"y"+this.yCoord+"z"+this.zCoord).equals("None")) {
+			LCLog.debug(nbtIris.getString("x"+this.xCoord+"y"+this.yCoord+"z"+this.zCoord));
+			renderInfoTile().tileRenderState().set("iris", true);
+
+			renderInfoTile().tileRenderState().set("iris-type", nbtIris.getString("x"+this.xCoord+"y"+this.yCoord+"z"+this.zCoord));
+		} else {
+			renderInfoTile().tileRenderState().set("iris", false);
+		}*/
+		//this.updateContainingBlockInfo();
+		//this.markClientDataDirty();
+		//this.markDirty();
+		//this.openInventory();
+		//TileStargateBase te = (TileStargateBase) worldObj.getTileEntity(this.xCoord, this.yCoord, this.zCoord);
+		//LCLog.debug(te.inventory.getStackInSlot(0) == null ? "null": te.inventory.getStackInSlot(0));
+		//LCLog.debug(this.getStackInSlot(0) == null ? "null": this.getStackInSlot(0));
 		if (inventory.getStackInSlot(0) != null && inventory.getStackInSlot(0).stackSize > 0) {
+			
 			renderInfoTile().tileRenderState().set("iris", true);
 			ItemIrisUpgrade upgrade = (ItemIrisUpgrade) inventory.getStackInSlot(0).getItem();
 			IrisType type = upgrade.getType(inventory.getStackInSlot(0));
 			renderInfoTile().tileRenderState().set("iris-type", type.getName());
 		} else {
+			
 			renderInfoTile().tileRenderState().set("iris", false);
 		}
 
@@ -491,8 +654,8 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 			trackedEntities.clear();
 			Matrix3 rotation = Orientations.from(getRotation()).rotation();
 			Vector3 origin = new Vector3(this);
-			Vector3 p0 = rotation.mul(new Vector3(-2.5, 0.5, 0.0));
-			Vector3 p1 = rotation.mul(new Vector3(2.5, 5.5, 1.0));
+			Vector3 p0 = rotation.mul(new Vector3(-2.5, 0.5, -2.0));
+			Vector3 p1 = rotation.mul(new Vector3(2.5, 5.5, 0.0));
 			AxisAlignedBB box = Vector3.makeAABB(p0.add(origin), p1.add(origin));
 			List<Entity> ents = worldObj.getEntitiesWithinAABB(Entity.class, box);
 			// LCLog.debug("Entity box: %s, count %s", box, ents.size());
@@ -533,6 +696,7 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 
 	private boolean thinkServerAcceptEntity(Entity entity, Trans3 src, Trans3 dst, TileStargateBase source) {
 		if (getIrisType() != null) {
+			
 			if (getIrisState() == IrisState.CLOSED) {
 				if (entity instanceof EntityPlayer) {
 					EntityPlayer player = (EntityPlayer) entity;
@@ -635,6 +799,7 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 						if (getIrisState() == IrisState.OPEN) {
 							irisTimer = getStargateSpeed();
 							irisState = IrisState.CLOSING;
+							
 							LCTile.doCallbacksNow(this, "computerEvent", "irisClosing", null);
 							doCommand = true;
 						}
@@ -675,7 +840,8 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 				irisState = IrisState.OPEN;
 			ItemStack stack = inventory.getStackInSlot(0);
 			ItemIrisUpgrade upgrade = (ItemIrisUpgrade) stack.getItem();
-
+			IrisType type = upgrade.getType(inventory.getStackInSlot(0));
+			//nbtIris.setString("x"+this.xCoord+"y"+this.yCoord+"z"+this.zCoord, type.getName());
 			IrisState is = getIrisState();
 			if (is == IrisState.OPENING || is == IrisState.CLOSING) {
 				irisTimer -= 1.0;
@@ -706,10 +872,13 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 				}
 				if (!power && irisBaton == IOControlBaton.REDSTONE && getIrisType() != null & is == IrisState.CLOSED)
 					openIris();
+				
 			}
 		} else {
+			//nbtIris.setString("x"+this.xCoord+"y"+this.yCoord+"z"+this.zCoord, "None");
 			irisState = IrisState.NONE;
 		}
+		
 	}
 
 	public Vector3[] getChevronBlocks() {
@@ -1083,4 +1252,5 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 		// TODO Auto-generated method stub
 		return 0;
 	}
+	
 }
