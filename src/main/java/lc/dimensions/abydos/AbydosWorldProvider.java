@@ -2,6 +2,8 @@ package lc.dimensions.abydos;
 
 import lc.LCRuntime;
 import lc.biomes.BiomeAbydosDesert;
+import lc.common.LCLog;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
@@ -24,6 +26,7 @@ public class AbydosWorldProvider extends WorldProvider {
 		abydosBiome = (BiomeAbydosDesert) LCRuntime.runtime.biomes().abydosDesert;
 		worldChunkMgr = new AbydosChunkManager(abydosBiome, 0);
 		hasNoSky = false;
+		
 	}
 	//TODO add sandstorms
 	@Override
@@ -33,12 +36,12 @@ public class AbydosWorldProvider extends WorldProvider {
 
 	@Override
 	public int getAverageGroundLevel() {
-		return 0;
+		return 64;
 	}
 
 	@Override
 	public boolean doesXZShowFog(int x, int z) {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -63,7 +66,7 @@ public class AbydosWorldProvider extends WorldProvider {
 
 	@Override
 	public float getCloudHeight() {
-		return 128.0F;
+		return -4.0F;
 	}
 
 	@Override
@@ -124,7 +127,7 @@ public class AbydosWorldProvider extends WorldProvider {
 
 	@Override
 	public Vec3 getFogColor(float celestialAngle, float partialTicks) {
-		int i = 10518688;
+		int i = 0xdad29f;// 10518688;
 		float f2 = MathHelper.cos(celestialAngle * 3.141593F * 2.0F) * 2.0F + 0.5F;
 		if (f2 < 0.0F)
 			f2 = 0.0F;
@@ -133,11 +136,12 @@ public class AbydosWorldProvider extends WorldProvider {
 		float f3 = (i >> 16 & 0xFF) / 255.0F;
 		float f4 = (i >> 8 & 0xFF) / 255.0F;
 		float f5 = (i & 0xFF) / 255.0F;
-		f3 *= f2 * 0.0F + 0.15F;
-		f4 *= f2 * 0.0F + 0.15F;
-		f5 *= f2 * 0.0F + 0.15F;
+		f3 *= f2 * (0.0F + 0.95F);
+		f4 *= f2 * (0.0F + 0.95F);
+		f5 *= f2 * (0.0F + 0.95F);
 
 		return Vec3.createVectorHelper(f3, f4, f5);
 	}
+	
 
 }

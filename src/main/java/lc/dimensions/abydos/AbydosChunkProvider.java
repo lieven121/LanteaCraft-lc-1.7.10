@@ -72,7 +72,7 @@ public class AbydosChunkProvider implements IChunkProvider {
 	}
 
 	private void generateChunk(int cx, int cz, Block[] map) {
-		byte heightWater = 42;
+		byte heightWater = 44;
 		initializeNoise(cx * 4, 0, cz * 4);
 		for (int k = 0; k < 4; ++k) {
 			int l = k * 5;
