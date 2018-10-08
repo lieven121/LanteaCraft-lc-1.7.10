@@ -367,25 +367,24 @@ public class ModelStargate {
 		//stripes chevronWidth / 4 ((4-stripes)/4.0*(chevronWidth / 2)+chevronWidth / 2)-w2
 		final int NUMOFSTRIPES = 4;  //TODO propper stripes
 		for (int stripes = 0; stripes < NUMOFSTRIPES; stripes++ ) {
-	/*		vertex(x2-0.1, y2-(0.1+2d / 16d)*chevronWidth / 4, z1+0.001, 0, 2);
-			vertex(x1, y1, z1+0.001, 0, 16);
-			vertex(x1 + w1, y1 - w1, z1+0.001, 4, 12);
-			vertex(x2-0.1, y2-(0.1+2d / 16d)*chevronWidth / 4 - w2, z1+0.001, 4, 2);*/
+		/*	vertex(x2-0.08*stripes-0.040, y2-(0.1*((stripes+1)+1d / 18d))*chevronWidth / 2, z1+0.001, 0, 2); //left up corner
+			vertex(x2-0.08*(stripes+1),  y2-(0.1*(stripes+1)+1d / 18d)*chevronWidth / 2 , z1+0.001, 0, 16); // left un corrner
+			vertex(x2-0.08*(stripes+1), y1-((0.1*((stripes+1))-3d / 18d))*chevronWidth / 2 , z1+0.001, 4, 12); // right un correne
+			vertex(x2-0.08*stripes-0.040, y1-((0.1*(stripes+1))-4d / 18d)*chevronWidth / 2, z1+0.001, 4, 2); // right upper corrner
 		
-			vertex(x2-0.08*stripes-0.025, y2-((0.08*stripes-0.025)+1d / 18d)*chevronWidth / 2, z1+0.001, 0, 2); //left up corner
-			vertex(x2-0.08*(stripes+1),  y2-((0.08*(stripes+1))+1d / 18d)*chevronWidth / 2 , z1+0.001, 0, 16); // left un corrner
-			vertex(x2-0.08*(stripes+1), y1-((0.08*(stripes+1))+1d / 18d)*chevronWidth / 4 , z1+0.001, 4, 12); // right un correne
-			vertex(x2-0.08*stripes-0.025, y1-((0.08*stripes-0.025)+1d / 18d)*chevronWidth / 4, z1+0.001, 4, 2); // right upper corrner*/
-			
-		/*vertex(x2-0.08*stripes-0.025, (3.0-stripes)/NUMOFSTRIPES*(y2-y1)+y1, z1+0.001, 0, 2); //left up corner
-		vertex(x2-0.08*(stripes+1), (3.0-stripes)/NUMOFSTRIPES*(y2-y1)+y1 , z1+0.001, 0, 16); // left un corrner
-		vertex(x2-0.08*(stripes+1), y1 - w1+w1/8, z1+0.001, 4, 12); // right un correne
-		vertex(x2-0.08*stripes-0.025, y2 - w2+w2/8, z1+0.001, 4, 2); // right upper corrner*/
+			vertex(x2-0.08*stripes-0.040, -y1+((0.1*((stripes+1))-4d / 18d))*chevronWidth / 2, z1+0.001, 12, 0);
+			vertex(x2-0.08*(stripes+1), -y1+((0.1*((stripes+1))-3d / 18d))*chevronWidth / 2, z1+0.001, 12, 12);
+			vertex(x2-0.08*(stripes+1),  -y2 + (0.1*(stripes+1)+1d / 18d)*chevronWidth / 2 , z1+0.001, 16, 16);
+			vertex(x2-0.08*stripes-0.040, -y2 +(0.1*((stripes+1)))*chevronWidth / 2, z1+0.001, 16, 0);// right upper corrner*/
+			vertex(x2-0.08*stripes-0.040, y2-(0.1*((stripes+1)-8d / 18d))*chevronWidth / 2, z1+0.001, 0, 2); //left up corner
+			vertex(x2-0.08*(stripes+1),  y2-(0.1*(stripes+1))*chevronWidth / 2 , z1+0.001, 0, 16); // left un corrner
+			vertex(x2-0.08*(stripes+1), y1-((0.1*((stripes+1))-3d / 18d))*chevronWidth / 2 , z1+0.001, 4, 12); // right un correne
+			vertex(x2-0.08*stripes-0.040, y1-((0.1*(stripes+1))-4d / 18d)*chevronWidth / 2, z1+0.001, 4, 2); // right upper corrner
 		
-		vertex(x2-0.08*stripes-0.025, -y1+((0.08*stripes-0.025)+1d / 18d)*chevronWidth / 4, z1+0.001, 12, 0);
-		vertex(x2-0.08*(stripes+1), -y1+((0.08*(stripes+1))+1d / 18d)*chevronWidth / 4, z1+0.001, 12, 12);
-		vertex(x2-0.08*(stripes+1),  -y2+((0.08*(stripes+1))+1d / 18d)*chevronWidth / 2, z1+0.001, 16, 16);
-		vertex(x2-0.08*stripes-0.025, -y2 +((0.08*stripes-0.025)+1d / 18d)*chevronWidth / 2, z1+0.001, 16, 0);// right upper corrner
+			vertex(x2-0.08*stripes-0.040, -y1+((0.1*((stripes+1))-4d / 18d))*chevronWidth / 2, z1+0.001, 12, 0);
+			vertex(x2-0.08*(stripes+1), -y1+((0.1*((stripes+1))-3d / 18d))*chevronWidth / 2, z1+0.001, 12, 12);
+			vertex(x2-0.08*(stripes+1),  -y2 + (0.1*(stripes+1))*chevronWidth / 2 , z1+0.001, 16, 16);
+			vertex(x2-0.08*stripes-0.040, -y2 +(0.1*((stripes+1)-8d / 18d))*chevronWidth / 2, z1+0.001, 16, 0);// right upper corrner
 		}
 		GL11.glColor3f(1, 1, 1);
 		GL11.glEnd();
