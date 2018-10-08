@@ -72,7 +72,9 @@ public class BlockStargateBase extends LCBlock {
 		super(Material.ground);
 		setHardness(3F).setResistance(2000F);
 		setOpaque(false).setProvidesInventory(false).setProvidesTypes(true).setCanRotate(true);
-
+		//if this.tile
+		//setBlockBounds(0f, 0.0f, 0.35f, 1f, 1f, 0.65f);
+		
 	}
 
 	@Override
@@ -141,6 +143,10 @@ public class BlockStargateBase extends LCBlock {
 			float cy, float cz) {
 		TileStargateBase te = (TileStargateBase) world.getTileEntity(x, y, z);
 		//setBlockBounds(0f, 0.0f, 0.35f, 1f, 1f, 0.75f);
+		//setBlockBounds(0f, 0.0f, 0.35f, 1f, 1f, 0.65f);
+		setBlockBounds(0f, 0.0f, 0.0f, 1f, 1f, 1f);
+		//this.
+		//this.setBlockBoundsBasedOnState(world, x, y, z);
 		//TODO 
 		if (te != null && te.getState() == MultiblockState.FORMED) {
 			player.openGui(LanteaCraft.instance, LCRuntime.runtime.interfaces().stargateUI.getGUIID(), world, x, y, z);
