@@ -291,6 +291,10 @@ public class Vector3 {
 	public Vector3 mul(double c) {
 		return new Vector3(c * x, c * y, c * z);
 	}
+	
+	public Vector3 mul2(double c) {
+		return new Vector3(c * z, c * y, c * x); 
+	}
 
 	/**
 	 * Divides the components of this Vector3 by the constant c, returns a new

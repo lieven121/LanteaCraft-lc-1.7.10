@@ -26,6 +26,8 @@ public class Matrix3 {
 	/** Unit matricies */
 	public double m[][] = new double[][] { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } };
 
+	//100 010
+	//100 010
 	/**
 	 * Rotation over x axis
 	 *
@@ -125,8 +127,18 @@ public class Matrix3 {
 	 * @return The product of matrix * vector result
 	 */
 	public Vector3 mul(double x, double y, double z) {
-		return new Vector3(x * m[0][0] + y * m[0][1] + z * m[0][2], x * m[1][0] + y * m[1][1] + z * m[1][2], x
-				* m[2][0] + y * m[2][1] + z * m[2][2]);
+		return new Vector3(
+				x * m[0][0] + 
+				y * m[0][1] + 
+				z * m[0][2],
+				
+				x * m[1][0] + 
+				y * m[1][1] + 
+				z * m[1][2], 
+				
+				x * m[2][0] + 
+				y * m[2][1] + 
+				z * m[2][2]);
 	}
 
 	/**
@@ -142,8 +154,18 @@ public class Matrix3 {
 	 */
 	public Vector3 imul(double x, double y, double z) {
 		// Multiply by inverse, assuming an orthonormal matrix
-		return new Vector3(x * m[0][0] + y * m[1][0] + z * m[2][0], x * m[0][1] + y * m[1][1] + z * m[2][1], x
-				* m[0][2] + y * m[1][2] + z * m[2][2]);
+		return new Vector3(
+				x * m[0][0] + 
+				y * m[1][0] + 
+				z * m[2][0], 
+				
+				x * m[0][1] + 
+				y * m[1][1] + 
+				z * m[2][1], 
+				
+				x * m[0][2] + 
+				y * m[1][2] + 
+				z * m[2][2]);
 	}
 
 	/**
@@ -156,6 +178,9 @@ public class Matrix3 {
 	public Vector3 mul(Vector3 v) {
 		return mul(v.x, v.y, v.z);
 	}
+	public Vector3 mul2(Vector3 v) {
+		return mul(v.z, v.y, v.x);
+	}
 
 	/**
 	 * Multiply this matrix by inverse against a vector
@@ -166,6 +191,10 @@ public class Matrix3 {
 	 */
 	public Vector3 imul(Vector3 v) {
 		return imul(v.x, v.y, v.z);
+	}
+	
+	public Vector3 imul2(Vector3 v) {
+		return imul(v.z, v.y, v.x);
 	}
 
 }

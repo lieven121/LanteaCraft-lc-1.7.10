@@ -32,6 +32,14 @@ public class Trans3 {
 	 */
 	public double scaling;
 
+	
+	public Trans3(Vector3 v) {
+	        this(v, Matrix3.ident);
+    }
+	
+	public Trans3(Vector3 v, Matrix3 m) {
+        this(v, m, 1.0);
+    }
 	/**
 	 * Creates a new Trans3.
 	 *
@@ -85,7 +93,9 @@ public class Trans3 {
 	 * @return The Trans3 product.
 	 */
 	public Trans3 translate(double dx, double dy, double dz) {
-		return new Trans3(offset.add(rotation.mul(dx * scaling, dy * scaling, dz * scaling)), rotation, scaling);
+		return new Trans3(
+				offset.add(rotation.mul(dx * scaling, dy * scaling, dz * scaling)),
+				rotation, scaling);
 	}
 
 	/**
@@ -140,8 +150,10 @@ public class Trans3 {
 	 * @return The result trans
 	 */
 	public Trans3 t(Trans3 t) {
-		return new Trans3(offset.add(rotation.mul(t.offset).mul(scaling)), rotation.mul(t.rotation), scaling
-				* t.scaling);
+		return new Trans3(
+				offset.add(rotation.mul(t.offset).mul(scaling)), 
+				rotation.mul(t.rotation), 
+				scaling * t.scaling);
 	}
 
 	/**
