@@ -77,6 +77,7 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.StatCollector;
+import net.minecraftforge.common.util.ForgeDirection;
 import cpw.mods.fml.relauncher.Side;
 
 /**
@@ -231,17 +232,15 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 	private static final OuchDamageSource unstableWholeDamSrc = new OuchDamageSource("unstable_wormhole");
 	private static final OuchDamageSource transDamSrc = new OuchDamageSource("unstable_transient");
 
-	private static final double stargateSpinTime = 20.0d;
-	private static final double stargateChevronMoveTime = 5.0d;
+	private static final double stargateSpinTime = 20.0;//20.0d;
+	private static final double stargateChevronMoveTime = 5.0;//5.0d;
 	private static final double stargateConnectTimeout = 200.0d;
 	private static final double stargateEstablishedTimeout = 2400.0d;
 	private static final double stargateVortexTime = 20.0d;
 	private static double stargateIrisSpeed = 40.0d;
 	
-	
 	private double getStargateSpeed() {
 		StateMap state = this.clientRenderState;
-	
 		if (state.get("iris", false)) {
 			if (state.get("iris-type", "").equals("mechanical")) 
 				stargateIrisSpeed = 60.0d;
@@ -402,8 +401,9 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 			else
 				clientAnimationQueue.add(new RingSpinLightAnimation(stargateSpinTime, 0.0d, 0.0d, true));
 			clientEngagedGlyphs.clear();
-			if ((StargateType.fromOrdinal(getBlockMetadata()) == StargateType.STANDARD || this.getStargateType().equals(getStargateType().NOX))) mixer().replayChannel("close");
-			else mixer().replayChannel("close_alt");
+			//if (getState() == MultiblockState.FORMED)
+				if ((StargateType.fromOrdinal(getBlockMetadata()) == StargateType.STANDARD || this.getStargateType().equals(getStargateType().NOX))) mixer().replayChannel("close");
+				else mixer().replayChannel("close_alt");
 			break;
 		case DISENGAGE:
 			if (clientEngagedGlyphs.size() > 0) {
@@ -485,7 +485,6 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 					//LCLog.debug(this.getStargateAddressString() == null?"null":this.getStargateAddressString());
 					
 			}
-			
 			switch (clientStargateState) {
 			case CONNECTED:
 				if (!clientDiallingIsSource) {
@@ -654,8 +653,8 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 			trackedEntities.clear();
 			Matrix3 rotation = Orientations.from(getRotation()).rotation();
 			Vector3 origin = new Vector3(this);
-			Vector3 p0 = rotation.mul(new Vector3(-2.5, 0.5, -2.0));
-			Vector3 p1 = rotation.mul(new Vector3(2.5, 5.5, 0.0));
+			Vector3 p0 = rotation.mul(new Vector3(-2.5, 0.5, -2));
+			Vector3 p1 = rotation.mul(new Vector3(2.5, 5.5, 2));
 			AxisAlignedBB box = Vector3.makeAABB(p0.add(origin), p1.add(origin));
 			List<Entity> ents = worldObj.getEntitiesWithinAABB(Entity.class, box);
 			// LCLog.debug("Entity box: %s, count %s", box, ents.size());
@@ -672,26 +671,47 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 			Vector3 p1 = rotation.mul(new Vector3(entity.posX, entity.posY, entity.posZ).sub(or));
 			Vector3 p0 = rotation.mul(new Vector3(2 * prevPos.x - entity.posX, 2 * prevPos.y - entity.posY, 2
 					* prevPos.z - entity.posZ).sub(or));
-			double z0 = 0.0;
-			if (p0.z >= z0 && p1.z < z0) {
+			//TODO replace tmp fix till i get vectors
+			if (getRotation() == ForgeDirection.WEST||getRotation() == ForgeDirection.NORTH) {
+				p0 =  new Vector3(p0.x-1,p0.y,p0.z-1);;
+				p1 =  new Vector3(p1.x-1,p1.y,p1.z-1);;
+			}
+				
+			double z0 = -0.3;
+			double z1 = z0;
+			//LCLog.debug("p0 "+p0.z);
+			//LCLog.debug("p1 "+p1.z);
+			if ((p0.z - p1.z) > 1)
+				z1 = 0.5;
+			else if ((p0.z - p1.z) > 0.55)
+				z1 = 0.3;
+			if (p0.z >= z0 && (p1.z < z0 || p1.z < z1)) {
+				
 				TileStargateBase dte = currentConnection.tileTo;
 				if (dte != null) {
 					Trans3 dt = new Trans3(dte.xCoord, dte.yCoord, dte.zCoord).rotate(Orientations.from(
-							dte.getRotation().getOpposite()).rotation());
+							dte.getRotation()).rotation()); //place tile entity v
+					/*if (dte.getRotation() == ForgeDirection.WEST||getRotation() == ForgeDirection.NORTH) {
+						dt =  new Trans3(dte.xCoord+1,dte.yCoord,dte.zCoord+1).rotate(Orientations.from(
+								dte.getRotation()).rotation());
+					}*/
 					while (entity.ridingEntity != null)
 						entity = entity.ridingEntity;
 					Trans3 t = new Trans3(xCoord, yCoord, zCoord).rotate(Orientations.from(getRotation()).rotation());
-					thinkServerDispatchEntity(entity, t, dt, dte);
+					
+					thinkServerDispatchEntity(entity, t, dt, dte, getRotation(), dte.getRotation());
 				}
 			}
+			//TODO do something when someone walks trough the back
 		}
 	}
 
-	private void thinkServerDispatchEntity(Entity entity, Trans3 src, Trans3 dst, TileStargateBase destination) {
-		boolean flag = destination.thinkServerAcceptEntity(entity, src, dst, this);
-		if (flag)
-			TeleportationHelper.sendEntityToWorld(entity, src, dst, destination.getWorldObj().provider.dimensionId);
-
+	private void thinkServerDispatchEntity(Entity entity, Trans3 src, Trans3 dst, TileStargateBase destination, ForgeDirection forgeDirectionSend, ForgeDirection forgeDirectionRec) {
+		if (getIrisType() == null || (getIrisState() == null? true : getIrisState() == IrisState.OPEN)) {
+			boolean flag = destination.thinkServerAcceptEntity(entity, src, dst, this);
+			if (flag)
+				TeleportationHelper.sendEntityToWorldStargate(entity, src, dst, destination.getWorldObj().provider.dimensionId,forgeDirectionSend,forgeDirectionRec);
+		}
 	}
 
 	private boolean thinkServerAcceptEntity(Entity entity, Trans3 src, Trans3 dst, TileStargateBase source) {
@@ -766,7 +786,8 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 							engagedGlyphs.clear();
 							LCTile.doCallbacksNow(this, "computerEvent", "disconnect", null);
 							doCommand = true;
-						}
+						} else if (currentConnection.stateTimeout <= 0 )
+							engagedGlyphs.clear();
 					}
 					break;
 				case DISENGAGE:
@@ -1031,7 +1052,8 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 
 	@Override
 	public String[] debug(Side side) {
-		return new String[] { String.format("Rotation: %s", getRotation()), String.format("Multiblock: %s", getState()) };
+		return new String[] { String.format("Rotation: %s", getRotation()), String.format("Multiblock: %s", getState()) , String.format("Iris: %s", (this.getIrisType()==null?"null":getIrisType()))
+				,  String.format("Iris: %s", (this.getActivatedGlyphs()))};
 	}
 
 	@Override
@@ -1058,6 +1080,30 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 			markNbtDirty();
 		}
 	}
+	
+	public void setIrisType() {
+			if (compound != null && compound.hasKey("skin-block")) {
+				compound.removeTag("iris-type");
+				markNbtDirty();
+			} else {
+			if (compound == null)
+				compound = new NBTTagCompound();
+				compound.setString("iris-type","open");
+			markNbtDirty();
+		}
+	}
+	
+	public void setIrisState() {
+		if (compound != null && compound.hasKey("skin-block")) {
+			compound.removeTag("iris-state");
+			markNbtDirty();
+		} else {
+		if (compound == null)
+			compound = new NBTTagCompound();
+			compound.setString("iris-state","open");
+		markNbtDirty();
+	}
+	}
 
 	public boolean hasConnectionState() {
 		if (!getWorldObj().isRemote)
@@ -1069,7 +1115,13 @@ public class TileStargateBase extends LCMultiblockTile implements IBlockSkinnabl
 	public StargateConnection getConnectionState() {
 		return currentConnection;
 	}
-
+	
+	/*public void test() {
+		LCStargateConnectionPacket state = new;
+		
+		sendPacketToClients(state);
+	}*/
+	
 	public void notifyConnectionState(StargateConnection connection) {
 		LCStargateConnectionPacket state;
 		if (connection == null || connection.dead || connection.state == null || connection.state == StargateState.IDLE) {

@@ -38,6 +38,8 @@ public class TileStargateBaseRenderer extends LCTileRenderer {
 			.formatResourceName("textures/fx/iris_${TEX_QUALITY}.png"));
 	public final ResourceLocation fxIrisEnergy = ResourceAccess.getNamedResource(ResourceAccess
 			.formatResourceName("textures/fx/energy_iris_${TEX_QUALITY}.png"));
+	public final ResourceLocation fxIrisEnergyActive = ResourceAccess.getNamedResource(ResourceAccess
+			.formatResourceName("textures/fx/energy_iris_${TEX_QUALITY}_act.png"));
 
 	public final static int ehGridRadialSize = 100;
 	public final static int irBladeSize = 20;
@@ -95,6 +97,11 @@ public class TileStargateBaseRenderer extends LCTileRenderer {
 		if (tile instanceof TileStargateBase) {
 			TileStargateBase base = (TileStargateBase) tile;
 			if (base.getState() == MultiblockState.FORMED) {
+				GL11.glEnable(GL11.GL_DEPTH_TEST);
+				GL11.glEnable(GL11.GL_ALPHA_TEST);
+				GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+				//GL11.glAlphaFunc(GL11.GL_EQUAL, 1.0f);
+				
 				GL11.glPushMatrix();
 				GL11.glEnable(GL11.GL_NORMALIZE);
 				GL11.glTranslated(x + 0.5d, y + 3.5d, z + 0.5d);
@@ -152,7 +159,7 @@ public class TileStargateBaseRenderer extends LCTileRenderer {
 			
 			GL11.glPushMatrix();
 			
-			GL11.glRotated(360.0 / irBladeSize * i , 0.0, 0.0, 1.0);
+			GL11.glRotated(360.0 / irBladeSize * i + 9, 0.0, 0.0, 1.0);
 			double tiltAngle = progress * 60;
 			double radius = ModelStargate.ringMidRadius;
 			double longW = ModelStargate.ringMidRadius, shortW = ModelStargate.ringInnerRadius;
@@ -194,96 +201,48 @@ public class TileStargateBaseRenderer extends LCTileRenderer {
 	}
 	
 	//TODO propper  animation
-/*	private void renderMechIrisImmediate(TileStargateBase tile, LCTileRenderPipeline pipeline, StateMap state,
-			double x, double y, double z, float t) {
-		double progress = 1.0d - state.get("iris-progress", 0.0d);
-		pipeline.bind(fxIrisMech);
-		pipeline.bind(ResourceAccess.getNamedResource(ResourceAccess
-				.formatResourceName("textures/fx/iris_test_${TEX_QUALITY}.png")));
-		/*for (int i = 0; i < 1; i++) {*//* for (int i = 0; i < irBladeSize; i++) {
-			
-			GL11.glPushMatrix();
-			
-			GL11.glRotated(360.0 / irBladeSize * i , 0.0, 0.0, 1.0);
-			double tiltAngle = progress * 60;
-			double radius = ModelStargate.ringMidRadius;
-			double longW = ModelStargate.ringMidRadius, shortW = ModelStargate.ringInnerRadius;
-			double heightZ = 0.2, heightQ = 1.00;
-			double length = heightQ - (heightQ - heightZ) * progress * progress;
-			double u0 = shortW / longW, v0 = length / heightQ;
-			double v1 = heightZ / heightQ;
-			double depth0 = 0.05, depth1 = 0.01;
-			
-			
-
-			GL11.glTranslated(radius-0.1, 0, 0);
-			GL11.glRotated(-tiltAngle, 0, 0, 1);
-			GL11.glBegin(GL11.GL_TRIANGLE_FAN);
-			GL11.glTexCoord2d(0.2, 0.2);
-			GL11.glVertex3d(-longW, 0, depth0);
-			GL11.glTexCoord2d(0.8, 0.2);
-			GL11.glVertex3d(0, 0, depth0 + depth1);
-			GL11.glTexCoord2d(0.8, v1);
-			GL11.glVertex3d(0, heightZ, depth0 + depth1);
-			GL11.glTexCoord2d(u0, v0);
-			GL11.glVertex3d(-longW + shortW, length, depth0);
-			GL11.glTexCoord2d(0, v0);
-			GL11.glVertex3d(-longW, length, depth0);
-			GL11.glEnd();
-
-			GL11.glBegin(GL11.GL_TRIANGLE_FAN);
-			GL11.glTexCoord2d(0, 0);
-			GL11.glVertex3d(-longW, 0, depth0);
-			GL11.glTexCoord2d(0, v0);
-			GL11.glVertex3d(-longW, length, depth0);
-			GL11.glTexCoord2d(u0, v0);
-			GL11.glVertex3d(-longW + shortW, length, depth0);
-			GL11.glTexCoord2d(1, v1);
-			GL11.glVertex3d(0, heightZ, depth0 - depth1);
-			GL11.glTexCoord2d(1, 0);
-			GL11.glVertex3d(0, 0, depth0 - depth1);
-			GL11.glEnd();
-			GL11.glPopMatrix();
-			
-		}
-
-	}*/
-	
-	
-	
-
-	
-
 	
 	//TODO clean up
-	
+	//TODO proper transparicy
 	private void renderEnergyIrisImmediate(TileStargateBase tile, LCTileRenderPipeline pipeline, StateMap state,
 			double x, double y, double z, float t) { //TODO maybe replace with particle to make see trough
 		double progress = 1.0d - state.get("iris-progress", 0.0d);
 
 		Minecraft.getMinecraft().getTextureManager().bindTexture(fxIrisEnergy);
-		Tessellator test = Tessellator.instance;
+		
+		if (state.get("event-horizon", false))
+			Minecraft.getMinecraft().getTextureManager().bindTexture(fxIrisEnergyActive);
+		
+		Tessellator tessl = Tessellator.instance;
 		GL11.glPushMatrix();
+		
+		//transparent
 		GL11.glDisable(GL11.GL_CULL_FACE);
-		//GL11.glEnable(GL11.GL_BLEND);
+		GL11.glEnable(GL11.GL_BLEND);
 		//GL11.glDepthMask(false);
+		
 		double grid[][] = tile.getGfxGrid()[0];
+		
+			//	GL11.glRotated(Math.random()*1, 0, 0, 1);
+		for (int times = 0; times<3;times++) { // makes texture less transparent
 		for (double i = ehGridRadialSize-ehGridRadialSize*(1-progress); i < ehGridRadialSize; i++) {
-			test.startDrawing(GL11.GL_QUAD_STRIP);
+			tessl.startDrawing(GL11.GL_QUAD_STRIP);
 			GL11.glBegin(5);
-			if (state.get("event-horizon", false)) 
-				test.setColorOpaque(255, 255, 255);
-			else
-				test.setColorOpaque(100, 100, 100);
+			//if (state.get("event-horizon", false)) 
+			//tessl.setColorOpaque(255, 255, 255);
+			tessl.setColorRGBA(255, 255, 255, 255);
+			//else
+			//	test.setColorOpaque(100, 100, 100);
 			
-			test.setBrightness(240);
+			tessl.setBrightness(240);
 			//test.setColorRGBA_F(1.0F, 1.0F, 1.0F, 1F);
 			for (int j = 0; j <= ehGridPolarSize; j++) {
-				renderEnergyIris(state,test, grid, i, j);
-				renderEnergyIris(state,test, grid, i + 1, j);
+				renderEnergyIris(state,tessl, grid, i, j);
+				renderEnergyIris(state,tessl, grid, i + 1, j);
 			}
 			GL11.glEnd();
-			test.draw();
+			tessl.draw();
+		}
 		}
 		GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 		//GL11.glDepthMask(true);
@@ -303,6 +262,8 @@ public class TileStargateBaseRenderer extends LCTileRenderer {
 		//tessel.addVertex(x, y, 0.09);
 		//if (state.get("event-horizon", false)) {
 			tessel.addVertex(x,  y, 0.08);
+			//tessel.addVertex(x,  y, 0.081);
+			//tessel.addVertex(x,  y, 0.082);
 	//	} else {
 		//	tessel.addVertex(x, y, 0.08);
 		//}
@@ -418,14 +379,6 @@ public class TileStargateBaseRenderer extends LCTileRenderer {
 
 		}
 
-	/*			tessel.startDrawing(5);
-			for (double i=0; i <= 2*Math.PI+0.14; i+= Math.PI/16) {
-				tessel.setColorRGBA_F(1f, 1f, 1f, 1.0f);
-				tessel.addVertexWithUV(Math.cos(i)*2, Math.sin(i)*2, 0, 0.2,0.2 );
-				tessel.addVertexWithUV(Math.cos(i)*2, Math.sin(i)*2, 3*progress, 0.8, 0.8);
-			}
-			tessel.draw();*/
-	
 	
 	
 	
